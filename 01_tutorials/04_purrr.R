@@ -71,12 +71,12 @@ filtered_lst <- list()
 fruits <- list("peach", "pear", "cherry", "strawberry", "blackberry")
 colors <- list("orange", "green", "red", "red", "black")
 
-## Iterate to sum
+## Iterate to create the sentence
 
 
 ## 5.2. A bigger example --------------------------
 
-## Plot 
+## Create a grid of parameters
 
 
 ## Create a Random Forest model for each parameter
