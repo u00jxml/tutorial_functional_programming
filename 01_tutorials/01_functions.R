@@ -27,37 +27,56 @@ trees_tbl$Girth_cm <- trees_tbl$Girth * 2.54
 
 ## 3.2. Calculate with a function --------------
 
-## Create function
-
-
+## Crear una funcion
+convert_in_to_cm <- function(x) {
+    x * 2.54
+}
+  
 ## Convert Girth from inches to cm
-
+trees_tbl$Girth_cm <- convert_in_to_cm(trees_tbl$Girth)
 
 ## 3.3. Calculate with mutate ------------------
 
 ## Convert Girth from inches to cm
-
+trees_tbl |> 
+    mutate(
+        Girth_cm = trees_tbl$Girth_cm * 2.54
+    )
 
 ## 3.4. Function with mutate -------------------
 
 ## Convert Girth from inches to cm
-
+trees_tbl |> 
+    mutate(
+        Girth_cm = convert_in_to_cm(trees_tbl$Girth_cm)
+    )
 
 # 4. Second function ------------------------------------------------------
 
-## -> Convert height from feet to meters
+## -> Conversion de la height desde feet a meters
 
-## Convert feet to meters
+## convertir de pies a metros
+convertir_pies_a_metros <- function(x) {
+    x * 0.3048
+}
+
+## Calculando la altura en metros 
+trees_tbl$Hight_metros <- convertir_pies_a_metros(trees_tbl$Height)
+
+# 5. Tercera funcion -------------------------------------------------------
+
+## Calcular la funcion de volumen 
+calculo_volumen <- function(diametro, altura){
+    pi / 4 * (diametro/100)^2 * altura
+}
 
 
-## Calculate height in meters
-
-
-# 5. Third function -------------------------------------------------------
-
-## Calculate volume function
-
-
-## Apply function
-
+## Aplicar la funcion
+trees_tbl |> 
+    mutate(
+        volumen_m3 = calculo_volumen(
+            diametro = Girth_cm,
+            altura   = Hight_metros 
+        )
+    )
 
