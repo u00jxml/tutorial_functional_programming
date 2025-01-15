@@ -53,7 +53,7 @@ trees_tbl |>
 
 # 4. Second function ------------------------------------------------------
 
-## -> Conversion de la height desde feet a meters
+## Conversion de la height desde feet a meters
 
 ## convertir de pies a metros
 convertir_pies_a_metros <- function(x) {
