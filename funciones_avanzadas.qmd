@@ -1,0 +1,602 @@
+---
+title: "clase1"
+format: html
+editor: visual
+---
+
+## Funciones avanzadas
+
+Vamos a cargar el paquete tidyverse
+
+```{r}
+#| echo: false       # Oculta el código
+#| results: hide     # Oculta los resultados
+#| message: false    # Oculta los mensajes
+#| warning: false 
+library(tidyverse)
+```
+
+ahora procedemos a cargar el archivo iris en forma de tbl
+
+```{r}
+iris_tbl <- as_tibble(iris)
+```
+
+y vamos nosotros a observarlo de esta manera
+
+```{r}
+iris_tbl
+```
+
+ok este es el conjunto de datos de longitud, ancho del sepalo e igual la longitud y ancho del petalo de diferents flores
+
+Entonces lo que haremos sera calcular la media de la variables numericas en el conjunto de datos del iris y ordenarlos y estas seran las funciones basicas de tidyverse
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        )
+    )
+```
+
+El comando utiliza el operador pipe ) y funciones del paquete `{dplyr}` para calcular el promedio de todas las columnas numéricas de un conjunto de datos llamado `iris_tbl`.
+
+1.- **`iris_tbl`**:
+
+-   Es el conjunto de datos de entrada. Se espera que sea un tibble o un data frame (similar al famoso conjunto de datos `iris`)
+
+2.- **`|>`**:
+
+-   Es el operador pipe que se utiliza para encadenar operaciones, enviando el resultado de una operación como entrada a la siguiente.
+
+3.- **`summarise()`**:
+
+-   Es una función de `{dplyr}` que se utiliza para crear un resumen de las columnas del conjunto de datos. En este caso, genera una única fila que contiene los resultados resumidos.
+
+4.- **`across()`**:
+
+-   Una función de `{dplyr}` que permite aplicar una operación (en este caso, `mean`) a un subconjunto de columnas del data frame.
+
+5.- **`where(is.numeric)`**:
+
+-   Un selector dentro de `across()` que selecciona todas las columnas del data frame que son numéricas.
+
+-   La función `is.numeric` verifica si una columna tiene valores numéricos.
+
+6.- **`mean`**:
+
+-   Es la función que se aplica a las columnas numéricas seleccionadas. Calcula el promedio de los valores en cada columna.
+
+El resultado será un tibble con una única fila. Cada columna representará el promedio de los valores de las columnas numéricas originales en `iris_tbl`
+
+El comando: Toma el conjunto de datos `iris_tbl`.
+
+1.  Calcula el promedio de todas las columnas numéricas.
+
+2.  Devuelve un tibble con una sola fila que contiene esos promedios.
+
+Este enfoque es muy útil cuando trabajas con tablas grandes y necesitas resumir valores numéricos de manera eficiente
+
+Ahora vamoa a modificar el comando enriqueciendolo
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    )
+```
+
+El comando introduce un argumento adicional, **`.by = Species`**, que modifica el comportamiento de la función `summarise()`.
+
+**`.by = Species`**:
+
+-   Este argumento agrupa el cálculo por la variable `Species`.
+
+-   En otras palabras, el comando calcula el promedio de cada columna numérica **para cada grupo de especies** (en este caso, `setosa`, `versicolor`, y `virginica`).
+
+El resultado es un tibble en el que:
+
+-   Cada fila representa una especie del conjunto de datos (`Species`).
+
+-   Cada columna numérica muestra el promedio de esa columna dentro de cada grupo de especies
+
+Vamos a aplicar el comando de diferente manera y veremos que el resultado es exactamente el mismo
+
+```{r}
+iris_tbl |> 
+    group_by(Species) |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+    )
+```
+
+Este codigo funciona para agrupar un conjunto de datos por la columna `Species` y luego calcular el promedio de todas las columnas numéricas dentro de cada grupo.
+
+### **Resumen:**
+
+-   **Este código agrupa los datos por la columna `Species` y luego calcula el promedio de las columnas numéricas para cada especie.**
+
+-   El resultado es un tibble con una fila por especie y columnas que muestran los promedios calculados.
+
+-   Tanto `group_by()` + `summarise()` como `.by` dentro de `summarise()` logran el mismo resultado, pero `.by` es más conciso.
+
+Ahora agregamos al comando
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric)
+    )
+```
+
+1.  Agrupa los datos por `Species` y calcula los promedios de todas las columnas numéricas.
+
+2.  Transforma las columnas numéricas en un formato largo, donde cada fila representa una combinación de `Species` y una de las columnas numéricas.
+
+El código combina varias funciones para transformar el conjunto de datos, primero calculando los promedios agrupados por `Species` y luego reorganizando los datos en un formato largo.
+
+1.- Primera parte: Cálculo de promedios agrupados por `Species`
+
+iris_tbl \|\> summarise( across( where(is.numeric), mean ), .by = Species )
+
+**`summarise(across(where(is.numeric), mean), .by = Species)`**:
+
+-   Calcula el promedio de todas las columnas numéricas (como `Sepal.Length`, `Sepal.Width`, etc.) para cada grupo de la columna `Species` (especies de flores: `setosa`, `versicolor`, y `virginica`).
+
+-   Esto genera un tibble con una fila por especie y las columnas que contienen los promedios.
+
+2.- Segunda parte: Reorganizacion del formato largo
+
+\|\> pivot_longer( cols = where(is.numeric) )
+
+**`pivot_longer(cols = where(is.numeric))`**:
+
+-   Convierte las columnas numéricas (como `Sepal.Length`, `Sepal.Width`, etc.) en un formato "largo".
+
+-   Las columnas numéricas se transforman en 2 columnas:
+
+    -   **`name`**: Contiene los nombres de las columnas originales (como `Sepal.Length`).
+
+    -   **`value`**: Contiene los valores de las columnas originales (en este caso, los promedios).
+
+Este formato permite trabajar con todas las columnas numéricas de manera uniforme, ya que ahora están en una única columna (`value`), con el nombre original de las columnas en la columna `name`.
+
+Ahora con el siguiente agregado vamos a agregar nombres a la columnas
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric),
+        names_to = "measure",
+        values_to = "mean"
+    )
+```
+
+Vamos a ordenarlos en forma descendente
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric),
+        names_to = "measure",
+        values_to = "mean"
+    ) |> 
+    arrange(
+        desc(mean)
+    )
+```
+
+Veamos ahora el agregado del comando
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric),
+        names_to = "measure",
+        values_to = "mean"
+    ) |> 
+    arrange(
+        desc(mean)
+    ) |> 
+    group_by(measure) |> 
+    arrange(
+        desc(mean),
+        .by_group = TRUE
+    )
+```
+
+### **Propósito general del código:**
+
+1.  **Calcular estadísticas agrupadas** (en este caso, promedios de columnas numéricas por especie).
+
+2.  **Reorganizar los datos en formato largo**, con nombres y valores separados.
+
+3.  **Ordenar y agrupar los datos** para facilitar su análisis o visualización posterior
+
+El resultado será un tibble ordenado jerárquicamente:
+
+1.  Las filas están agrupadas por `measure`.
+
+2.  Dentro de cada grupo, las filas están ordenadas en orden descendente según los valores de `mean`.
+
+Agrupar por `measure  group_by(measure)`
+
+Agrupa el tibble por la columna `measure`. Esto significa que las operaciones posteriores se realizarán dentro de cada grupo de medidas (`Sepal.Length`, `Sepal.Width`, etc.).
+
+Ordenar dentro de cada grupo
+
+arrange( desc(mean), .by_group = TRUE )
+
+Ordena los datos dentro de cada grupo (definido por `measure`) en orden descendente de `mean`.
+
+Ahora los vamos a desagrupar
+
+```{r}
+iris_tbl |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Species
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric),
+        names_to = "measure",
+        values_to = "mean"
+    ) |> 
+    arrange(
+        desc(mean)
+    ) |> 
+    group_by(measure) |> 
+    arrange(
+        desc(mean),
+        .by_group = TRUE
+    ) |> 
+    ungroup()
+```
+
+Aqui estan desagrupados
+
+#### Vamos a generar una funcion
+
+```{r}
+calc_iris_mean <- function(data){
+    data |> 
+        summarise(
+            across(
+                where(is.numeric), mean
+            ),
+            .by = Species
+        ) |> 
+        pivot_longer(
+            cols = where(is.numeric),
+            names_to = "measure",
+            values_to = "mean"
+        ) |> 
+        arrange(
+            desc(mean)
+        ) |> 
+        group_by(measure) |> 
+        arrange(
+            desc(mean),
+            .by_group = TRUE
+        ) |> 
+        ungroup()
+}
+```
+
+El comando define una **función** `calc_iris_mean` que encapsula una serie de operaciones de transformación y resumen de datos. Este tipo de definición permite reutilizar este flujo de procesamiento con cualquier conjunto de datos que cumpla con ciertos requisitos.
+
+1\. Nombre de la función
+
+calc_iris_mean
+
+El nombre de la función sugiere que su propósito es calcular los promedios de las columnas numéricas del conjunto de datos `iris` (o un conjunto de datos similar)
+
+2.- Entrada de la funcion
+
+function(data)
+
+La función acepta un argumento llamado `data`, que será el conjunto de datos sobre el que se realizarán las operaciones.
+
+Requisitos del `data`:
+
+-   Debe contener columnas numéricas (por ejemplo, `Sepal.Length`, `Sepal.Width`, etc.).
+
+-   Debe tener una columna categórica que agrupe los datos (en este caso, `Species`).
+
+3.- Opraciones dentro de la funcion
+
+a\) Resumen por grupo
+
+data \|\> summarise( across( where(is.numeric), mean ), .by = Species )
+
+-   Agrupa los datos por la columna `Species` y calcula los promedios de todas las columnas numéricas.
+
+-   El resultado es un conjunto de datos con los valores promedio para cada especie
+
+b\) Transformacion a formato largo
+
+\> pivot_longer( cols = where(is.numeric), names_to = "measure", values_to = "mean" )
+
+-   Convierte las columnas numéricas (`Sepal.Length`, `Sepal.Width`, etc.) en un formato largo.
+
+-   Crea dos nuevas columnas:
+
+    -   `measure`: Contiene los nombres de las columnas numéricas originales.
+
+    -   `mean`: Contiene los valores promedio calculados anteriormente.
+
+c\) Orden global por promedio
+
+\|\> arrange( desc(mean) )
+
+Ordena el tibble completo de forma descendente según los valores de la columna `mean`
+
+d\) Agrupar por medida
+
+\|\> group_by(measure)
+
+Agrupa las filas del tibble según la columna `measure` (ej. `Sepal.Length`, `Sepal.Width`, etc.).
+
+e\) Ordena dentro de los grupos
+
+\|\> arrange( desc(mean), .by_group = TRUE )
+
+Ordena las filas dentro de cada grupo por el valor de `mean` en orden descendente.
+
+f\) Aliminar agrupaciones
+
+\|\> ungroup()
+
+Deshace cualquier agrupación aplicada anteriormente. Esto asegura que el tibble final no mantenga grupos activos.
+
+#### **4. Salida de la función:**
+
+El resultado final es un tibble con:
+
+-   Una fila por cada combinación de especie y medida.
+
+-   Ordenado jerárquicamente:
+
+    -   Primero por medida (`measure`).
+
+    -   Dentro de cada medida, las especies están ordenadas por su promedio (`mean`) en orden descendente.
+
+### **Propósito de la función:**
+
+1.  **Resumir datos numéricos agrupados por categorías.**
+
+2.  **Transformar el resultado para facilitar el análisis o visualización.**
+
+3.  **Ordenar y estructurar los datos de forma jerárquica.**
+
+Este flujo puede usarse con cualquier conjunto de datos que cumpla los requisitos mencionados, no solo `iris`. Es ideal para explorar tendencias o patrones en columnas numéricas agrupadas por una variable categórica
+
+#### Buscar la funcion
+
+```{r}
+source("R/util.R")
+```
+
+ahora usando nuestra funcion
+
+```{r}
+iris_tbl |> 
+   calc_iris_mean()
+```
+
+Vamos a aplicarlo a otro conjunto de datos
+
+```{r}
+airquality
+```
+
+Tenemos diferentes variables, el ozono, radiacion solar, viento, temperatura, mes y dia y queremos ver la media de estas variables por mes
+
+```{r echo=TRUE, eval=FALSE}
+airquality |> 
+    as_tibble() |> 
+    calc_iris_mean()
+```
+
+Nos arroja un error por que la columna de especies no existe en el conjunto de la calidad del aire nuevo . Veamos como si lo hacemos funcionar, remplazando species por Month
+
+```{r}
+airquality |> 
+    summarise(
+        across(
+            where(is.numeric), mean
+        ),
+        .by = Month
+    ) |> 
+    pivot_longer(
+        cols = where(is.numeric),
+        names_to = "measure",
+        values_to = "mean"
+    ) |> 
+    arrange(
+        desc(mean)
+    ) |> 
+    group_by(measure) |> 
+    arrange(
+        desc(mean),
+        .by_group = TRUE
+    ) |> 
+    ungroup()
+```
+
+Vamos a generar una funcion donde podremos calcular la media
+
+```{r}
+calc_numeric_mean <- function(data, group) {
+    data |> 
+        summarise(
+            across(
+                where(is.numeric), mean
+            ),
+            .by = {{ group }}
+        ) |> 
+        pivot_longer(
+            cols = where(is.numeric),
+            names_to = "measure",
+            values_to = "mean"
+        ) |> 
+        arrange(
+            desc(mean)
+        ) |> 
+        group_by(measure) |> 
+        arrange(
+            desc(mean),
+            .by_group = TRUE
+        ) |> 
+        ungroup()
+}
+```
+
+Aqui ya esta creada la funcion para poder calcular la media, ahora probemoslo al grupo de datos de la calidad del aire
+
+```{r}
+airquality |> 
+    calc_numeric_mean(
+        group = Month
+    )
+```
+
+Ahora igual lo probemos al conjunto iris
+
+```{r}
+calc_numeric_mean(
+    data = iris_tbl,
+    group = Species
+)
+```
+
+Vamos a poner todo el argumento de la siguiente funcion
+
+```{r}
+calc_numeric_mean <- function(data, group) {
+    data |> 
+        summarise(
+            across(
+                where(is.numeric), \(x) mean(x, na.rm = TRUE)
+            ),
+            .by = {{ group }}  
+        ) |> 
+        pivot_longer(
+            cols = where(is.numeric),
+            names_to = "measure",
+            values_to = "mean"
+        ) |> 
+        arrange(
+            desc(mean)
+        ) |> 
+        group_by(measure) |> 
+        arrange(
+            desc(mean),
+            .by_group = TRUE
+        ) |> 
+        ungroup()
+}
+```
+
+Esta función es útil en análisis exploratorios, reportes y visualización de tendencias en datos numéricos agrupados
+
+La función `calc_numeric_mean` generaliza la operación para trabajar con cualquier conjunto de datos y cualquier variable de agrupación
+
+### **Función:**
+
+#### **Nombre y argumentos**
+
+calc_numeric_mean \<- function(data, group) { ... }
+
+1.- data: El conjunto de datos que se desea procesar. Debe contener columna numericas y una columna de agrupacion
+
+2.- group: Es la columna que define los grupos para los que se calcularan los promedios de las columna numericas
+
+El uso de `{{ group }}` permite pasar la variable de agrupación como un nombre sin comillas gracias a la evaluación no estándar de `dplyr`
+
+#### **Cuerpo de la función:**
+
+1.  **Calcular promedios por grupo:**
+
+data \|\> summarise( across( where(is.numeric), \\(x) mean(x, na.rm = TRUE) ), .by = {{ group }} )
+
+-   **Agrupa los datos** según la variable especificada en `group`.
+
+-   Calcula el promedio de todas las columnas numéricas, ignorando los valores `NA` (gracias a `na.rm = TRUE`).
+
+-   La salida es un tibble con una fila por cada grupo y las columnas numéricas representando los promedios.
+
+2.- Transformación a formato largo:
+
+\|\> pivot_longer( cols = where(is.numeric), names_to = "measure", values_to = "mean" )
+
+Convierte las columnas numéricas en dos nuevas columnas:
+
+-   **`measure`:** El nombre de la columna numérica original.
+
+-   **`mean`:** El valor promedio calculado para esa columna y ese grupo
+
+3.- Ordenar por promedio global.
+
+\|\> arrange( desc(mean) )
+
+Ordena todas las filas en orden descendente según el valor de `mean`
+
+4.- Agrupar por medida y ordenar dentro de los grupos:
+
+\|\> group_by(measure) \|\> arrange( desc(mean), .by_group = TRUE )
+
+-   Agrupa las filas por `measure` (es decir, por cada variable numérica).
+
+-   Dentro de cada grupo, las filas se ordenan en orden descendente según `mean`.
+
+5.- Eliminar agrupacion:
+
+\|\> ungroup()
+
+Desactiva las agrupaciones para que el resultado final sea un tibble simple.
+
+### **Salida de la función**
+
+El tibble final tiene:
+
+1.  Una fila por cada combinación de grupo y medida.
+
+2.  Orden jerárquico:
+
+    -   Primero, por `measure`.
+
+    -   Dentro de cada `measure`, por el promedio en orden descendente.
